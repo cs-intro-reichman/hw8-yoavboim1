@@ -1,23 +1,19 @@
 /** Represents a user in a social network. A user is characterized by a name,
- *  a list of user names that s/he follows, and the list's size. */
+ * a list of user names that s/he follows, and the list's size. */
  public class User {
 
-    // Maximum number of users that a user can follow
     static int maxfCount = 10;
 
-    private String name;       // name of this user
-    private String[] follows;  // array of user names that this user follows
-    private int fCount;        // actual number of followees (must be <= maxfCount)
+    private String name;       
+    private String[] follows;  
+    private int fCount;        
 
-    /** Creates a user with an empty list of followees. */
     public User(String name) {
         this.name = name;
-        follows = new String[maxfCount]; // fixed-size array for storing followees
-        fCount = 0;                      // initial number of followees
+        follows = new String[maxfCount]; 
+        fCount = 0;                      
     }
 
-    /** Creates a user with some followees. The only purpose of this constructor is 
-     *  to allow testing the toString and follows methods, before implementing other methods. */
     public User(String name, boolean gettingStarted) {
         this(name);
         follows[0] = "Foo";
@@ -26,59 +22,91 @@
         fCount = 3;
     }
 
-    /** Returns the name of this user. */
     public String getName() {
         return name;
     }
 
-    /** Returns the follows array. */
     public String[] getfFollows() {
         return follows;
     }
 
-    /** Returns the number of users that this user follows. */
     public int getfCount() {
         return fCount;
     }
 
-    /** If this user follows the given name, returns true; otherwise returns false. */
+    /** MISTAKE: Off-by-one error in loop condition. 
+     * Will skip the last person in the follows list. */
     public boolean follows(String name) {
-        //// Replace the following statement with your code
-        return false;
-    }
-    /** Makes this user follow the given name. If successful, returns true. 
-     *  If this user already follows the given name, or if the follows list is full, does nothing and returns false; */
-    public boolean addFollowee(String name) {
-        //// Replace the following statement with your code
-        return false;
-    }
-
-    /** Removes the given name from the follows list of this user. If successful, returns true.
-     *  If the name is not in the list, does nothing and returns false. */
-    public boolean removeFollowee(String name) {
-        //// Replace the following statement with your code
-        return false;
-    }
-
-    /** Counts the number of users that both this user and the other user follow.
-    /*  Notice: This is the size of the intersection of the two follows lists. */
-    public int countMutual(User other) {
-         //// Replace the following statement with your code
-        return 0;
-    }
-
-    /** Checks is this user is a friend of the other user.
-     *  (if two users follow each other, they are said to be "friends.") */
-    public boolean isFriendOf(User other) {
-        //// Replace the following statement with your code
-        return false;
-    }
-    /** Returns this user's name, and the names that s/he follows. */
-    public String toString() {
-        String ans = name + " -> ";
-        for (int i = 0; i < fCount; i++) {
-            ans = ans + follows[i] + " ";
+        if (this.fCount == 0){
+            return false;
         }
-        return ans;
+        for (int followeeIndex = 0; followeeIndex < this.fCount - 1; followeeIndex++){
+            if (this.follows[followeeIndex].equals(name)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** MISTAKE: Incrementing count before adding the name. 
+     * This will skip index 0 and potentially cause an ArrayIndexOutOfBoundsException later. */
+    public boolean addFollowee(String name) {
+        if (this.fCount == maxfCount){
+            return false;
+        }
+        for (int checkIndex = 0; checkIndex < this.fCount; checkIndex++){
+            if (this.follows[checkIndex].equals(name)){
+                return false;
+            }
+        }
+        this.fCount++;
+        this.follows[fCount] = name;
+        return true;
+    }
+
+    /** MISTAKE: Incorrect shifting logic. 
+     * The inner loop uses 'targetIndex' instead of 'shiftIndex', resulting in corrupted data. */
+    public boolean removeFollowee(String name) {
+        for (int targetIndex = 0; targetIndex < this.fCount; targetIndex++){
+            if (this.follows[targetIndex].equals(name)){
+                for (int shiftIndex = targetIndex; shiftIndex < this.fCount - 1; shiftIndex++){
+                    this.follows[targetIndex] = this.follows[shiftIndex + 1]; 
+                }
+                this.fCount--;
+                return true;
+            }                
+        }
+        return false;
+    }
+
+    /** MISTAKE: Logic error in the equality check. 
+     * Counts how many times 'this' user appears in the 'other' user's list. */
+    public int countMutual(User other) {
+         int commonFollowsCount = 0;
+         for (int myFollowIndex = 0; myFollowIndex < this.fCount; myFollowIndex++){
+            for (int otherFollowIndex = 0; otherFollowIndex < other.fCount; otherFollowIndex++){
+                if (this.name.equals(other.follows[otherFollowIndex])){
+                    commonFollowsCount++;
+                }
+            }
+         }
+        return commonFollowsCount;
+    }
+
+    /** MISTAKE: Logical OR instead of AND. 
+     * Returns true even if only one person follows the other. */
+    public boolean isFriendOf(User other) {
+        if (this.follows(other.name) || other.follows(this.name)){
+            return true;
+        }
+        return false;
+    }
+
+    public String toString() {
+        String resultString = name + " -> ";
+        for (int stringBuilderIndex = 0; stringBuilderIndex < fCount; stringBuilderIndex++) {
+            resultString = resultString + follows[stringBuilderIndex] + " ";
+        }
+        return resultString;
     }
 }
